@@ -1,0 +1,39 @@
+repositories {
+    maven {
+        name = "Modrinth"
+        url = "https://api.modrinth.com/maven"
+    }
+    maven { url = "https://mvn.devos.one/snapshots/" } // Create Fabric, Porting Lib, Forge Tags, Milk Lib, Registrate Fabric
+    mavenCentral()
+}
+
+architectury {
+    common(rootProject.enabled_platforms.split(","))
+}
+
+dependencies {
+    api 'org.joml:joml-primitives:1.10.0'
+    api 'org.joml:joml:1.10.4'
+
+    // We depend on fabric loader here to use the fabric @Environment annotations and get the mixin dependencies
+    // Do NOT use other classes from fabric loader
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    // Remove the next line if you don't want to depend on the API
+    modApi "dev.architectury:architectury:${rootProject.architectury_version}"
+
+//    modApi("org.valkyrienskies:valkyrienskies-118-common:${rootProject.vs2_version}")
+    modApi(files("vs_jars/valkyrienskies-118-common-2.1.1-beta.6+88d9088afa.jar"))
+    compileOnly("org.valkyrienskies.core:api:${rootProject.vs_core_version}")
+    compileOnly("org.valkyrienskies.core:api-game:${rootProject.vs_core_version}")
+    compileOnly("org.valkyrienskies.core:util:${rootProject.vs_core_version}")
+    compileOnly("org.valkyrienskies.core:impl:${rootProject.vs_core_version}")
+
+    implementation(files("vs_jars/VMod-0.0.10-dev.jar"))
+
+    api "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.21"
+    api "org.jetbrains.kotlin:kotlin-reflect:1.7.21"
+
+    modCompileOnly("com.simibubi.create:create-fabric-${minecraft_version}:${create_fabric_version}")
+
+    compileOnly(annotationProcessor("io.github.llamalad7:mixinextras-common:0.4.0-beta.2"))
+}

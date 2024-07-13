@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "vmod_additions",
+  "version": "${version}",
+
+  "name": "VMod Additions",
+  "description": "",
+  "authors": [],
+  "contact": {},
+
+  "license": "MIT",
+  "icon": "icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.spaceeye.vmod_additions.fabric.VModAdditionsFabric"
+    ]
+  },
+  "mixins": [
+    "vmod_additions.mixins.json",
+    "vmod_additions-common.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": ">=1.18.2",
+    "valkyrien_mod": ">=0.0.10"
+  }
+}
