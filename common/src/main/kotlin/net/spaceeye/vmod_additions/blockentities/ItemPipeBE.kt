@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState
 import net.spaceeye.vmod_additions.ItemPipeStacksHandler
 import net.spaceeye.vmod_additions.VABlockEntities
 
+//TODO add logic for toolgun schem
 class ItemPipeBE(pos: BlockPos, state: BlockState): BlockEntity(VABlockEntities.ITEM_PIPE.get(), pos, state), WorldlyContainer {
     var id = -1
     var item: ItemStack
@@ -23,15 +24,15 @@ class ItemPipeBE(pos: BlockPos, state: BlockState): BlockEntity(VABlockEntities.
     override fun saveAdditional(tag: CompoundTag) {
         tag.putInt("id", id)
         tag.putInt("mID", mID)
-        tag.put("item", item.save(CompoundTag()))
         tag.putLong("otherPos", otherPos.asLong())
+        tag.put("item", item.save(CompoundTag()))
     }
 
     override fun load(tag: CompoundTag) {
         id = tag.getInt("id")
         mID = tag.getInt("mID")
-        ItemPipeStacksHandler.loadStack(id, ItemStack.of(tag.getCompound("item")))
         otherPos = BlockPos.of(tag.getLong("otherPos"))
+        ItemPipeStacksHandler.loadStack(id, ItemStack.of(tag.getCompound("item")))
     }
 
     override fun removeItem(slot: Int, count: Int): ItemStack {

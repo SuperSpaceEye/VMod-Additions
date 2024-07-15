@@ -32,6 +32,11 @@ class Linker(properties: Properties): Item(properties) {
             return super.useOn(useOnContext)
         }
 
+        if (pos1 == pos) {
+            pos1 = null
+            return super.useOn(useOnContext)
+        }
+
         block.link(level, pos1!!, pos)
 
         pos1 = null
