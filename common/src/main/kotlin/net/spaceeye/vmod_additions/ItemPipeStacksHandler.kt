@@ -4,7 +4,6 @@ import net.minecraft.world.item.ItemStack
 import net.spaceeye.vmod.utils.ServerClosable
 import kotlin.math.max
 
-//TODO use weak ref hashmap so that there are no memory leaks
 object ItemPipeStacksHandler: ServerClosable() {
     private val data = mutableMapOf<Int, ItemStack>()
     private val canMove = mutableMapOf<Int, () -> Boolean>()
@@ -42,4 +41,10 @@ object ItemPipeStacksHandler: ServerClosable() {
     }
 
     fun getStack(id: Int) = data[id] ?: ItemStack.EMPTY
+
+    fun removeStack(id: Int) {
+        data.remove(id)
+        canMove.remove(id)
+        updates.remove(id)
+    }
 }

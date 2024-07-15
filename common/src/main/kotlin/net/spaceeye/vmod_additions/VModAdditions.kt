@@ -1,5 +1,7 @@
 package net.spaceeye.vmod_additions
 
+import net.spaceeye.vmod.rendering.RenderingTypes
+import net.spaceeye.vmod_additions.renderers.TubeRenderer
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
@@ -18,5 +20,7 @@ object VModAdditions {
         VABlocks.register()
         VABlockEntities.register()
         VAItems.register()
+
+        RenderingTypes.register(::TubeRenderer)
     }
 }

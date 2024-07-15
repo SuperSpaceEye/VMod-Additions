@@ -19,6 +19,7 @@ import net.spaceeye.vmod_additions.ItemPipeStacksHandler
 import net.spaceeye.vmod_additions.Linkable
 import net.spaceeye.vmod_additions.VAConfig
 import net.spaceeye.vmod_additions.blockentities.ItemPipeBE
+import net.spaceeye.vmod_additions.renderers.TubeRenderer
 import org.valkyrienskies.mod.common.dimensionId
 import org.valkyrienskies.mod.common.getShipManagingPos
 import org.valkyrienskies.mod.common.shipObjectWorld
@@ -37,14 +38,27 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
         bl: Boolean
     ) {
         if (level !is ServerLevel) {return super.onRemove(blockState, level, blockPos, blockState2, bl)}
-        val be = level.getBlockEntity(blockPos) as ItemPipeBE
-        level.removeManagedConstraint(be.mID)
+        unlink(level, blockPos)
         super.onRemove(blockState, level, blockPos, blockState2, bl)
     }
 
-    //TODO add more checks for linking
+    override fun unlink(level: ServerLevel, pos: BlockPos): Boolean {
+        val be = level.getBlockEntity(pos) ?: return false
+        if (be !is ItemPipeBE) return false
+        if (be.id == -1) return false
+
+        ItemPipeStacksHandler.removeStack(be.id)
+        level.removeManagedConstraint(be.mID)
+
+        be.id = -1
+        be.mID = -1
+
+        unlink(level, be.otherPos)
+        be.otherPos = BlockPos(0, 0, 0)
+        return true
+    }
+
     override fun link(level: ServerLevel, pos1: BlockPos, pos2: BlockPos): Boolean {
-        Vector3d(0, 10, 0)
         val be1 = level.getBlockEntity(pos1) ?: return false
         val be2 = level.getBlockEntity(pos2) ?: return false
 
@@ -53,6 +67,8 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
         val ship1 = level.getShipManagingPos(pos1)
         val ship2 = level.getShipManagingPos(pos2)
 
+        if (ship1 == null && ship2 == null) {return false}
+
         val spos1 = Vector3d(pos1) + 0.5
         val spos2 = Vector3d(pos2) + 0.5
 
@@ -60,9 +76,7 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
         val rpos1 = if (ship1 != null) { posShipToWorld(ship1, spos1) } else Vector3d(spos1)
         val rpos2 = if (ship2 != null) { posShipToWorld(ship2, spos2) } else Vector3d(spos2)
 
-        if ((rpos1 - rpos2).dist() >= VAConfig.SERVER.PIPES.ITEM_PIPE_MAX_DIST) {
-            return false
-        }
+        if ((rpos1 - rpos2).dist() >= VAConfig.SERVER.PIPES.ITEM_PIPE_MAX_DIST) { return false }
 
         val mID = level.makeManagedConstraint(RopeMConstraint(
             ship1?.id ?: level.shipObjectWorld.dimensionToGroundBodyIdImmutable[level.dimensionId]!!,
@@ -72,13 +86,14 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
             1e+20,
             VAConfig.SERVER.PIPES.ITEM_PIPE_MAX_DIST,
             listOf(pos1, pos2),
-            A2BRenderer(
-                ship1 != null, ship2 != null,
-                spos1, spos2, Color.CYAN, 0.2
+            TubeRenderer(
+                spos1, spos2, 1f, ship1 != null, ship2 != null
             )
         )) ?: return false
 
-        val itemStack = be1.item
+        unlink(level, pos1)
+        unlink(level, pos2)
+
         val id = ItemPipeStacksHandler.createStack(
             {
                 if (!level.isLoaded(pos1) || !level.isLoaded(pos2)) {return@createStack false}
@@ -98,13 +113,15 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
 
             (be1 is ItemPipeBE) && (be2 is ItemPipeBE)
         }
-        ItemPipeStacksHandler.setStack(id, itemStack)
 
         be1.id = id
         be2.id = id
 
         be1.mID = mID
         be2.mID = mID
+
+        be1.otherPos = pos2
+        be2.otherPos = pos1
 
         be1.setChanged()
         be2.setChanged()

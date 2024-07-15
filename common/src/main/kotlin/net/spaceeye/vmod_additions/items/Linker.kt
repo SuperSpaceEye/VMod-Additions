@@ -14,11 +14,17 @@ class Linker(properties: Properties): Item(properties) {
         val level = useOnContext.level
         if (level !is ServerLevel) { return super.useOn(useOnContext) }
         val player = useOnContext.player ?: return super.useOn(useOnContext)
-        if (player.isShiftKeyDown) { pos1 = null; return super.useOn(useOnContext) }
 
         val pos = useOnContext.clickedPos
         val state = level.getBlockState(pos)
         val block = state.block
+
+        if (player.isShiftKeyDown) {
+            pos1 = null
+            if (!state.isAir && block is Linkable) { block.unlink(level, pos) }
+            return super.useOn(useOnContext)
+        }
+
         if (state.isAir || block !is Linkable) {return super.useOn(useOnContext)}
 
         if (pos1 == null) {

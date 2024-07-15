@@ -18,17 +18,20 @@ class ItemPipeBE(pos: BlockPos, state: BlockState): BlockEntity(VABlockEntities.
         get() = ItemPipeStacksHandler.getStack(id)
         set(value) = ItemPipeStacksHandler.setStack(id, value)
     var mID = -1
+    var otherPos = BlockPos(0, 0, 0)
 
     override fun saveAdditional(tag: CompoundTag) {
         tag.putInt("id", id)
         tag.putInt("mID", mID)
         tag.put("item", item.save(CompoundTag()))
+        tag.putLong("otherPos", otherPos.asLong())
     }
 
     override fun load(tag: CompoundTag) {
         id = tag.getInt("id")
         mID = tag.getInt("mID")
         ItemPipeStacksHandler.loadStack(id, ItemStack.of(tag.getCompound("item")))
+        otherPos = BlockPos.of(tag.getLong("otherPos"))
     }
 
     override fun removeItem(slot: Int, count: Int): ItemStack {
