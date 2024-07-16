@@ -12,7 +12,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.spaceeye.vmod_additions.blockentities.FluidPipeBE;
 import net.spaceeye.vmod_additions.forge.ForgeFluidTank;
-import net.spaceeye.vmod_additions.utils.CommonFluidTank;
+import net.spaceeye.vmod_additions.sharedContainers.CommonFluidTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;

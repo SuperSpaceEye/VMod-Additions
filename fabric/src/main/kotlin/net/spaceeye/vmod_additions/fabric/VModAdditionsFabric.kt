@@ -10,7 +10,7 @@ class VModAdditionsFabric : ModInitializer {
     override fun onInitialize() {
         init()
 
-        FluidStorage.SIDED.registerForBlockEntity({tank, direction -> (tank.tank) as FabricFluidTank}, VABlockEntities.FLUID_PIPE.get())
-        EnergyStorage.SIDED.registerForBlockEntity({tank, direction -> (tank.tank) as FabricEnergyTank}, VABlockEntities.ENERGY_PIPE.get())
+        FluidStorage.SIDED.registerForBlockEntity({tank, direction -> (tank.container) as FabricFluidTank}, VABlockEntities.FLUID_PIPE.get())
+        EnergyStorage.SIDED.registerForBlockEntity({tank, direction -> (tank.container) as FabricEnergyTank}, VABlockEntities.ENERGY_PIPE.get())
     }
 }

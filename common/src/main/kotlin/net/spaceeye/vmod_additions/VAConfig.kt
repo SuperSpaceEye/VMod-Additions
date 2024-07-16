@@ -9,6 +9,8 @@ object VAConfig {
 
         class Pipes() {
             val ITEM_PIPE_MAX_DIST = 7.0
+            val FLUID_PIPE_MAX_DIST = 7.0
+            val ENERGY_PIPE_MAX_DIST = 7.0
         }
     }
 }

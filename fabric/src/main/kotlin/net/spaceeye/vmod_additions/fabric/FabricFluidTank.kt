@@ -4,7 +4,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidConstants
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleVariantStorage
 import net.minecraft.nbt.CompoundTag
-import net.spaceeye.vmod_additions.utils.CommonFluidTank
+import net.spaceeye.vmod_additions.sharedContainers.CommonFluidTank
 
 class FabricFluidTank: CommonFluidTank, SingleVariantStorage<FluidVariant>() {
     private var _capacity = FluidConstants.BUCKET

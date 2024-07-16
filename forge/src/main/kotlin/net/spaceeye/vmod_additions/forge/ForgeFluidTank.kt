@@ -3,7 +3,7 @@ package net.spaceeye.vmod_additions.forge
 import net.minecraft.nbt.CompoundTag
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.capability.templates.FluidTank
-import net.spaceeye.vmod_additions.utils.CommonFluidTank
+import net.spaceeye.vmod_additions.sharedContainers.CommonFluidTank
 
 class ForgeFluidTank(capacity: Int): CommonFluidTank, FluidTank(capacity) {
     constructor(): this(1000)

@@ -2,7 +2,7 @@ package net.spaceeye.vmod_additions.forge
 
 import net.minecraft.nbt.CompoundTag
 import net.minecraftforge.energy.EnergyStorage
-import net.spaceeye.vmod_additions.utils.CommonEnergyTank
+import net.spaceeye.vmod_additions.sharedContainers.CommonEnergyTank
 
 class ForgeEnergyTank(capacity: Int): CommonEnergyTank, EnergyStorage(capacity, capacity, capacity) {
     constructor(): this(100000000)

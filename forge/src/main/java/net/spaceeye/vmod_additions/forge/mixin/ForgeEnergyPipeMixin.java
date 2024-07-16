@@ -12,7 +12,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.spaceeye.vmod_additions.blockentities.EnergyPipeBE;
 import net.spaceeye.vmod_additions.forge.ForgeEnergyTank;
-import net.spaceeye.vmod_additions.utils.CommonEnergyTank;
+import net.spaceeye.vmod_additions.sharedContainers.CommonEnergyTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;

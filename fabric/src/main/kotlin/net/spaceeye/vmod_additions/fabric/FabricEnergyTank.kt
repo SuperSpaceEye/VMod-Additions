@@ -1,7 +1,7 @@
 package net.spaceeye.vmod_additions.fabric
 
 import net.minecraft.nbt.CompoundTag
-import net.spaceeye.vmod_additions.utils.CommonEnergyTank
+import net.spaceeye.vmod_additions.sharedContainers.CommonEnergyTank
 import team.reborn.energy.api.base.SimpleEnergyStorage
 
 class FabricEnergyTank(capacity: Long): CommonEnergyTank, SimpleEnergyStorage(capacity, capacity, capacity) {
