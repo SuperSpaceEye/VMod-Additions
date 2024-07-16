@@ -9,10 +9,10 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import net.spaceeye.vmod_additions.blockentities.FluidPipeBE;
-import net.spaceeye.vmod_additions.forge.ForgeFluidTank;
-import net.spaceeye.vmod_additions.utils.CommonFluidTank;
+import net.minecraftforge.energy.IEnergyStorage;
+import net.spaceeye.vmod_additions.blockentities.EnergyPipeBE;
+import net.spaceeye.vmod_additions.forge.ForgeEnergyTank;
+import net.spaceeye.vmod_additions.utils.CommonEnergyTank;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,17 +20,18 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin(FluidPipeBE.class)
-abstract class ForgeFluidPipeMixin extends BlockEntity {
-    @Shadow
-    abstract public CommonFluidTank getTank();
-
-    @Unique public LazyOptional<IFluidHandler> lazyFluidHandler = LazyOptional.empty();
-    @Unique public Capability<IFluidHandler> fluidCap = CapabilityManager.get(new CapabilityToken<>(){});
-
-    public ForgeFluidPipeMixin(BlockEntityType<?> arg, BlockPos arg2, BlockState arg3) {
+@Mixin(EnergyPipeBE.class)
+abstract class ForgeEnergyPipeMixin extends BlockEntity {
+    public ForgeEnergyPipeMixin(BlockEntityType<?> arg, BlockPos arg2, BlockState arg3) {
         super(arg, arg2, arg3);
     }
+
+    @Shadow
+    abstract public CommonEnergyTank getTank();
+
+    @Unique
+    public LazyOptional<IEnergyStorage> lazyEnergyHandler = LazyOptional.empty();
+    @Unique public Capability<IEnergyStorage> energyCap = CapabilityManager.get(new CapabilityToken<>(){});
 
     /**
      * @author SpaceEye
@@ -43,8 +44,8 @@ abstract class ForgeFluidPipeMixin extends BlockEntity {
 
     @Override
     public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if (cap == fluidCap) {
-            return lazyFluidHandler.cast();
+        if (cap == energyCap) {
+            return lazyEnergyHandler.cast();
         }
         return super.getCapability(cap, side);
     }
@@ -52,13 +53,13 @@ abstract class ForgeFluidPipeMixin extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        lazyFluidHandler = LazyOptional.of(() -> (ForgeFluidTank)getTank());
+        lazyEnergyHandler = LazyOptional.of(() -> (ForgeEnergyTank)getTank());
     }
 
     @Override
     public void invalidateCaps() {
         super.invalidateCaps();
-        lazyFluidHandler.invalidate();
-        lazyFluidHandler = LazyOptional.of(() -> (ForgeFluidTank)getTank());
+        lazyEnergyHandler.invalidate();
+        lazyEnergyHandler = LazyOptional.of(() -> (ForgeEnergyTank)getTank());
     }
 }

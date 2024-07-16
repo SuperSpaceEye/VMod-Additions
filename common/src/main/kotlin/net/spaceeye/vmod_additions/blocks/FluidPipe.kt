@@ -56,7 +56,7 @@ class FluidPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
         val spos1 = Vector3d(pos1) + 0.5
         val spos2 = Vector3d(pos2) + 0.5
 
-        //TODO can't use .let here because reasons
+        //TODO can't use .let here because run configuration dies for some reason
         val rpos1 = if (ship1 != null) { posShipToWorld(ship1, spos1) } else Vector3d(spos1)
         val rpos2 = if (ship2 != null) { posShipToWorld(ship2, spos2) } else Vector3d(spos2)
 

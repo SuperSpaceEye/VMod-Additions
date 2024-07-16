@@ -2,8 +2,6 @@ package net.spaceeye.vmod_additions.blocks
 
 import net.minecraft.core.BlockPos
 import net.minecraft.server.level.ServerLevel
-import net.minecraft.world.ContainerHelper
-import net.minecraft.world.entity.item.ItemEntity
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseEntityBlock
 import net.minecraft.world.level.block.RenderShape
@@ -12,42 +10,28 @@ import net.minecraft.world.level.block.state.BlockState
 import net.spaceeye.vmod.constraintsManaging.makeManagedConstraint
 import net.spaceeye.vmod.constraintsManaging.removeManagedConstraint
 import net.spaceeye.vmod.constraintsManaging.types.RopeMConstraint
-import net.spaceeye.vmod.rendering.types.A2BRenderer
 import net.spaceeye.vmod.utils.Vector3d
 import net.spaceeye.vmod.utils.vs.posShipToWorld
-import net.spaceeye.vmod_additions.ItemPipeStacksHandler
+import net.spaceeye.vmod_additions.EnergyPipeEnergyTankHandler
 import net.spaceeye.vmod_additions.Linkable
 import net.spaceeye.vmod_additions.VAConfig
-import net.spaceeye.vmod_additions.blockentities.ItemPipeBE
+import net.spaceeye.vmod_additions.blockentities.EnergyPipeBE
 import net.spaceeye.vmod_additions.renderers.TubeRenderer
 import org.valkyrienskies.mod.common.dimensionId
 import org.valkyrienskies.mod.common.getShipManagingPos
 import org.valkyrienskies.mod.common.shipObjectWorld
-import java.awt.Color
 
-class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
+class EnergyPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
     override fun newBlockEntity(blockPos: BlockPos, blockState: BlockState): BlockEntity? {
-        return ItemPipeBE(blockPos, blockState)
-    }
-
-    override fun onRemove(
-        blockState: BlockState,
-        level: Level,
-        blockPos: BlockPos,
-        blockState2: BlockState,
-        bl: Boolean
-    ) {
-        if (level !is ServerLevel) {return super.onRemove(blockState, level, blockPos, blockState2, bl)}
-        unlink(level, blockPos)
-        super.onRemove(blockState, level, blockPos, blockState2, bl)
+        return EnergyPipeBE(blockPos, blockState)
     }
 
     override fun unlink(level: ServerLevel, pos: BlockPos): Boolean {
         val be = level.getBlockEntity(pos) ?: return false
-        if (be !is ItemPipeBE) return false
+        if (be !is EnergyPipeBE) return false
         if (be.id == -1) return false
 
-        ItemPipeStacksHandler.removeStack(be.id)
+        EnergyPipeEnergyTankHandler.removeTank(be.id)
         level.removeManagedConstraint(be.mID)
 
         be.id = -1
@@ -58,11 +42,12 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
         return true
     }
 
+
     override fun link(level: ServerLevel, pos1: BlockPos, pos2: BlockPos): Boolean {
         val be1 = level.getBlockEntity(pos1) ?: return false
         val be2 = level.getBlockEntity(pos2) ?: return false
 
-        if (be1 !is ItemPipeBE || be2 !is ItemPipeBE) {return false}
+        if (be1 !is EnergyPipeBE || be2 !is EnergyPipeBE) {return false}
 
         val ship1 = level.getShipManagingPos(pos1)
         val ship2 = level.getShipManagingPos(pos2)
@@ -78,7 +63,8 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
 
         if ((rpos1 - rpos2).dist() >= VAConfig.SERVER.PIPES.ITEM_PIPE_MAX_DIST) { return false }
 
-        val mID = level.makeManagedConstraint(RopeMConstraint(
+        val mID = level.makeManagedConstraint(
+            RopeMConstraint(
             ship1?.id ?: level.shipObjectWorld.dimensionToGroundBodyIdImmutable[level.dimensionId]!!,
             ship2?.id ?: level.shipObjectWorld.dimensionToGroundBodyIdImmutable[level.dimensionId]!!,
             1e-20,
@@ -89,29 +75,20 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
             TubeRenderer(
                 spos1, spos2, 1f, ship1 != null, ship2 != null
             )
-        )) ?: return false
+        )
+        ) ?: return false
 
         unlink(level, pos1)
         unlink(level, pos2)
 
-        val id = ItemPipeStacksHandler.createStack(
-            {
-                if (!level.isLoaded(pos1) || !level.isLoaded(pos2)) {return@createStack false}
-                val be1 = level.getBlockEntity(pos1)
-                if (be1 !is ItemPipeBE) {return@createStack false}
-                val be2 = level.getBlockEntity(pos2)
-                if (be2 !is ItemPipeBE) {return@createStack false}
-
-                be1.id != -1 && be2.id != -1 && be1.id == be2.id
-            }
-        ) {
+        val id = EnergyPipeEnergyTankHandler.createTank {
             val be1 = level.getBlockEntity(pos1)
-            if (be1 is ItemPipeBE) { be1.setChanged() }
+            if (be1 is EnergyPipeBE) { be1.setChanged() }
 
             val be2 = level.getBlockEntity(pos2)
-            if (be2 is ItemPipeBE) { be2.setChanged() }
+            if (be2 is EnergyPipeBE) { be2.setChanged() }
 
-            (be1 is ItemPipeBE) && (be2 is ItemPipeBE)
+            (be1 is EnergyPipeBE) && (be2 is EnergyPipeBE)
         }
 
         be1.id = id
@@ -127,6 +104,18 @@ class ItemPipe(properties: Properties): BaseEntityBlock(properties), Linkable {
         be2.setChanged()
 
         return true
+    }
+
+    override fun onRemove(
+        blockState: BlockState,
+        level: Level,
+        blockPos: BlockPos,
+        blockState2: BlockState,
+        bl: Boolean
+    ) {
+        if (level !is ServerLevel) {return super.onRemove(blockState, level, blockPos, blockState2, bl)}
+        unlink(level, blockPos)
+        super.onRemove(blockState, level, blockPos, blockState2, bl)
     }
 
     override fun getRenderShape(state: BlockState) = RenderShape.MODEL
