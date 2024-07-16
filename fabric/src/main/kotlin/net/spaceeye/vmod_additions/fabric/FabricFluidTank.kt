@@ -22,7 +22,7 @@ class FabricFluidTank: CommonFluidTank, SingleVariantStorage<FluidVariant>() {
     }
 
     override fun withCapacity(capacity: Long): FabricFluidTank {
-        this._capacity = capacity
+        this._capacity = FluidConstants.BUCKET * capacity
         return this
     }
 

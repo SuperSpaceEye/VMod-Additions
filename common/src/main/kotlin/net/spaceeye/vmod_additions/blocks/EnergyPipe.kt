@@ -11,6 +11,6 @@ import net.spaceeye.vmod_additions.sharedContainers.CommonSharedContainerHandler
 
 class EnergyPipe(properties: Properties): CommonPipe<CommonEnergyTank>(properties) {
     override val handler: CommonSharedContainerHandler<CommonEnergyTank> get() = EnergyPipeEnergyTankHandler
-    override val maxConnectionDist: Double get() = VAConfig.SERVER.PIPES.ENERGY_PIPE_MAX_DIST
+    override val maxConnectionDist: Double get() = VAConfig.SERVER.PIPES.MAX_DIST.ENERGY_PIPE
     override fun newBlockEntity(blockPos: BlockPos, blockState: BlockState): BlockEntity? { return EnergyPipeBE(blockPos, blockState) }
 }

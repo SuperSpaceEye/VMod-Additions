@@ -11,6 +11,6 @@ import net.spaceeye.vmod_additions.sharedContainers.SingleItemContainer
 
 class ItemPipe(properties: Properties): CommonPipe<SingleItemContainer>(properties) {
     override val handler: CommonSharedContainerHandler<SingleItemContainer> get() = ItemPipeStacksHandler
-    override val maxConnectionDist: Double get() = VAConfig.SERVER.PIPES.ITEM_PIPE_MAX_DIST
+    override val maxConnectionDist: Double get() = VAConfig.SERVER.PIPES.MAX_DIST.ITEM_PIPE
     override fun newBlockEntity(blockPos: BlockPos, blockState: BlockState): BlockEntity? { return ItemPipeBE(blockPos, blockState) }
 }

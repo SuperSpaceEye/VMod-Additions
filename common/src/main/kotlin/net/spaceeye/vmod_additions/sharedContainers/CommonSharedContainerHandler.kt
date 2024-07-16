@@ -3,7 +3,7 @@ package net.spaceeye.vmod_additions.sharedContainers
 import net.spaceeye.vmod.utils.ServerClosable
 import kotlin.math.max
 
-abstract class CommonSharedContainerHandler<T: CommonContainer>(val containerConstructor: () -> T): ServerClosable() {
+abstract class CommonSharedContainerHandler<T: CommonContainer>(val containerConstructor: () -> T, val getBufferSize: () -> Long): ServerClosable() {
     private val data = mutableMapOf<Int, T>()
     private val defaultContainer = containerConstructor().withCapacity(0L)
     private var counter = -1
@@ -11,7 +11,7 @@ abstract class CommonSharedContainerHandler<T: CommonContainer>(val containerCon
     fun createContainer(update: () -> Boolean): Int {
         counter++
 
-        val container = containerConstructor()
+        val container = containerConstructor().withCapacity(getBufferSize()) as T
         data.getOrPut(counter) {container}
         container.registerOnChange { update() }
 

@@ -6,12 +6,12 @@ import net.minecraftforge.fluids.capability.templates.FluidTank
 import net.spaceeye.vmod_additions.sharedContainers.CommonFluidTank
 
 class ForgeFluidTank(capacity: Int): CommonFluidTank, FluidTank(capacity) {
-    constructor(): this(1000)
+    constructor(): this(1)
 
     var onChange: (() -> Unit)? = null
 
     override fun withCapacity(capacity: Long): CommonFluidTank {
-        return ForgeFluidTank(capacity.toInt())
+        return ForgeFluidTank(capacity.toInt() * 1000)
     }
 
     override fun writeNBT(name: String, tag: CompoundTag) {
