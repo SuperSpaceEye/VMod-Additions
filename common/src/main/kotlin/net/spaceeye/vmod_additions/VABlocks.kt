@@ -9,13 +9,15 @@ import net.minecraft.world.level.material.Material
 import net.spaceeye.vmod_additions.blocks.EnergyPipe
 import net.spaceeye.vmod_additions.blocks.FluidPipe
 import net.spaceeye.vmod_additions.blocks.ItemPipe
+import net.spaceeye.vmod_additions.blocks.RotationPipe
 
 object VABlocks {
-    private val BLOCKS = DeferredRegister.create(VModAdditions.MOD_ID, Registry.BLOCK_REGISTRY)
+    private val BLOCKS = DeferredRegister.create(VA.MOD_ID, Registry.BLOCK_REGISTRY)
 
     var ITEM_PIPE = BLOCKS.register("item_pipe") { ItemPipe(BlockBehaviour.Properties.of(Material.METAL).strength(2.0f)) }
     var FLUID_PIPE = BLOCKS.register("fluid_pipe") { FluidPipe(BlockBehaviour.Properties.of(Material.METAL).strength(2.0f)) }
     var ENERGY_PIPE = BLOCKS.register("energy_pipe") { EnergyPipe(BlockBehaviour.Properties.of(Material.METAL).strength(2.0f)) }
+    var ROTATION_PIPE = if (VA.createExists) { BLOCKS.register("rotation_pipe") { RotationPipe(BlockBehaviour.Properties.of(Material.METAL).strength(2.0f)) } } else {null}
 
     fun register() {BLOCKS.register()}
     fun registerItems(items: DeferredRegister<Item?>) {

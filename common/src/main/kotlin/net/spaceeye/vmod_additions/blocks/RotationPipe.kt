@@ -1,42 +1,53 @@
 package net.spaceeye.vmod_additions.blocks
 
+import com.simibubi.create.content.kinetics.RotationPropagator
+import com.simibubi.create.content.kinetics.base.IRotate
+import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock
+import com.simibubi.create.foundation.block.IBE
 import net.minecraft.core.BlockPos
+import net.minecraft.core.Direction
+import net.minecraft.core.Direction.Axis
 import net.minecraft.server.level.ServerLevel
+import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.Level
-import net.minecraft.world.level.block.BaseEntityBlock
-import net.minecraft.world.level.block.RenderShape
+import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockState
+import net.minecraft.world.level.block.state.properties.BlockStateProperties
 import net.spaceeye.vmod.constraintsManaging.makeManagedConstraint
 import net.spaceeye.vmod.constraintsManaging.removeManagedConstraint
 import net.spaceeye.vmod.constraintsManaging.types.RopeMConstraint
 import net.spaceeye.vmod.utils.Vector3d
 import net.spaceeye.vmod.utils.vs.posShipToWorld
 import net.spaceeye.vmod_additions.Linkable
-import net.spaceeye.vmod_additions.blockentities.CommonPipeBE
+import net.spaceeye.vmod_additions.VABlockEntities
+import net.spaceeye.vmod_additions.blockentities.RotationPipeBE
 import net.spaceeye.vmod_additions.renderers.TubeRenderer
-import net.spaceeye.vmod_additions.sharedContainers.CommonContainer
-import net.spaceeye.vmod_additions.sharedContainers.CommonSharedContainerHandler
 import org.valkyrienskies.mod.common.dimensionId
 import org.valkyrienskies.mod.common.getShipManagingPos
 import org.valkyrienskies.mod.common.shipObjectWorld
 
-abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntityBlock(properties), Linkable {
-    abstract val handler: CommonSharedContainerHandler<T>
-    abstract val maxConnectionDist: Double
+class RotationPipe(properties: Properties): RotatedPillarKineticBlock(properties), IBE<RotationPipeBE>, IRotate, Linkable {
+    init {
+        registerDefaultState(defaultBlockState().setValue(BlockStateProperties.AXIS, Axis.Y))
+    }
 
     override fun unlink(level: ServerLevel, pos: BlockPos): Boolean {
         val be = level.getBlockEntity(pos) ?: return false
-        if (be !is CommonPipeBE<*, *>) return false
-        if (be.id == -1) return false
+        if (be !is RotationPipeBE) return false
+        if (be.otherPos == null) return false
 
-        handler.removeContainer(be.id)
         level.removeManagedConstraint(be.mID)
-
-        be.id = -1
         be.mID = -1
 
-        unlink(level, be.otherPos)
-        be.otherPos = BlockPos(0, 0, 0)
+        RotationPropagator.handleRemoved(level, pos, be)
+
+        val opos = be.otherPos!!
+        be.otherPos = null
+        unlink(level, opos)
+
+        RotationPropagator.handleAdded(level, pos, be)
+
         return true
     }
 
@@ -44,7 +55,7 @@ abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntit
         val be1 = level.getBlockEntity(pos1) ?: return false
         val be2 = level.getBlockEntity(pos2) ?: return false
 
-        if (be1 !is CommonPipeBE<*, *> || be2 !is CommonPipeBE<*, *>) {return false}
+        if (be1 !is RotationPipeBE || be2 !is RotationPipeBE) {return false}
 
         val ship1 = level.getShipManagingPos(pos1)
         val ship2 = level.getShipManagingPos(pos2)
@@ -58,7 +69,7 @@ abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntit
         val rpos1 = if (ship1 != null) { posShipToWorld(ship1, spos1) } else Vector3d(spos1)
         val rpos2 = if (ship2 != null) { posShipToWorld(ship2, spos2) } else Vector3d(spos2)
 
-        if ((rpos1 - rpos2).dist() >= maxConnectionDist) { return false }
+        if ((rpos1 - rpos2).dist() >= 7.0) { return false }
 
         val mID = level.makeManagedConstraint(
             RopeMConstraint(
@@ -67,7 +78,7 @@ abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntit
                 1e-20,
                 spos1.toJomlVector3d(), spos2.toJomlVector3d(),
                 1e+20,
-                maxConnectionDist,
+                7.0,
                 listOf(pos1, pos2),
                 TubeRenderer(
                     spos1, spos2, 1f, ship1 != null, ship2 != null
@@ -78,19 +89,6 @@ abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntit
         unlink(level, pos1)
         unlink(level, pos2)
 
-        val id = handler.createContainer {
-            val be1 = level.getBlockEntity(pos1)
-            if (be1 is CommonPipeBE<*, *>) { be1.setChanged() }
-
-            val be2 = level.getBlockEntity(pos2)
-            if (be2 is CommonPipeBE<*, *>) { be2.setChanged() }
-
-            (be1 is CommonPipeBE<*, *>) && (be2 is CommonPipeBE<*, *>)
-        }
-
-        be1.id = id
-        be2.id = id
-
         be1.mID = mID
         be2.mID = mID
 
@@ -99,6 +97,11 @@ abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntit
 
         be1.setChanged()
         be2.setChanged()
+
+        RotationPropagator.handleAdded(level, pos1, be1)
+        RotationPropagator.handleAdded(level, pos2, be2)
+
+        level.getBlockState(pos1).block
 
         return true
     }
@@ -115,5 +118,12 @@ abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntit
         super.onRemove(blockState, level, blockPos, blockState2, bl)
     }
 
-    override fun getRenderShape(state: BlockState) = RenderShape.MODEL
+    override fun getStateForPlacement(ctx: BlockPlaceContext): BlockState? {
+        return super.getStateForPlacement(ctx)
+    }
+
+    override fun hasShaftTowards(world: LevelReader?, pos: BlockPos?, state: BlockState?, face: Direction?) = face!!.axis == state!!.getValue(BlockStateProperties.AXIS)
+    override fun getRotationAxis(state: BlockState?): Axis = state!!.getValue(AXIS)
+    override fun getBlockEntityClass(): Class<RotationPipeBE> { return RotationPipeBE::class.java }
+    override fun getBlockEntityType(): BlockEntityType<out RotationPipeBE> { return VABlockEntities.ROTATION_PIPE!!.get() }
 }

@@ -12,7 +12,7 @@ import net.spaceeye.vmod.VM
 import net.spaceeye.vmod_additions.items.Linker
 
 object VAItems {
-    val ITEMS = DeferredRegister.create(VModAdditions.MOD_ID, Registry.ITEM_REGISTRY)
+    val ITEMS = DeferredRegister.create(VA.MOD_ID, Registry.ITEM_REGISTRY)
 
     val TAB: CreativeModeTab = CreativeTabRegistry.create(
         ResourceLocation(
