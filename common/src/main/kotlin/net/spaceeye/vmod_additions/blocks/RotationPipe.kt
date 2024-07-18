@@ -101,8 +101,6 @@ class RotationPipe(properties: Properties): RotatedPillarKineticBlock(properties
         RotationPropagator.handleAdded(level, pos1, be1)
         RotationPropagator.handleAdded(level, pos2, be2)
 
-        level.getBlockState(pos1).block
-
         return true
     }
 

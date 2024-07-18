@@ -4,7 +4,6 @@
   "package": "net.spaceeye.vmod_additions.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "RotationPropagatorMixin"
   ],
   "client": [
   ],
