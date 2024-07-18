@@ -23,7 +23,7 @@ import org.spongepowered.asm.mixin.Unique;
 @Mixin(FluidPipeBE.class)
 abstract class ForgeFluidPipeMixin extends BlockEntity {
     @Shadow
-    abstract public CommonFluidTank getTank();
+    abstract public CommonFluidTank _getContainer();
 
     @Unique public LazyOptional<IFluidHandler> lazyFluidHandler = LazyOptional.empty();
     @Unique public Capability<IFluidHandler> fluidCap = CapabilityManager.get(new CapabilityToken<>(){});
@@ -52,13 +52,13 @@ abstract class ForgeFluidPipeMixin extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        lazyFluidHandler = LazyOptional.of(() -> (ForgeFluidTank)getTank());
+        lazyFluidHandler = LazyOptional.of(() -> (ForgeFluidTank)_getContainer());
     }
 
     @Override
     public void invalidateCaps() {
         super.invalidateCaps();
         lazyFluidHandler.invalidate();
-        lazyFluidHandler = LazyOptional.of(() -> (ForgeFluidTank)getTank());
+        lazyFluidHandler = LazyOptional.of(() -> (ForgeFluidTank)_getContainer());
     }
 }

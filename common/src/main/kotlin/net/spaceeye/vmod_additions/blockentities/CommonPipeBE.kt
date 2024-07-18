@@ -22,11 +22,11 @@ abstract class CommonPipeBE<T: BlockEntity, TT: CommonContainer>(
 
     var mID = -1
     var otherPos = BlockPos(0, 0, 0)
-    val container: TT
+    open val container: TT
         get() = containerHandler.getContainer(id)
 
     // should be overwritten in forge mixin to invalidate caps if needed
-    private fun onIdUpdate() {}
+    protected open fun onIdUpdate() {}
 
     override fun saveAdditional(tag: CompoundTag) {
         tag.putInt("id", id)

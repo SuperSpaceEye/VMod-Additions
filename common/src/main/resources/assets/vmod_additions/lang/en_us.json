@@ -1,0 +1,10 @@
+{
+  "block.vmod_additions.item_pipe": "Item Pipe",
+  "block.vmod_additions.fluid_pipe": "Fluid Pipe",
+  "block.vmod_additions.energy_pipe": "Energy Pipe",
+  "block.vmod_additions.rotation_pipe": "Rotation Pipe",
+
+  "item.vmod_additions.linker": "Linker",
+
+  "itemGroup.vmod_additions.vmod_additions_tab": "VMod Additions"
+}

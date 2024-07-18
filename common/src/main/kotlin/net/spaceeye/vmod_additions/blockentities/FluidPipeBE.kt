@@ -10,4 +10,8 @@ import net.spaceeye.vmod_additions.sharedContainers.CommonFluidTank
 class FluidPipeBE(pos: BlockPos, state: BlockState): CommonPipeBE<FluidPipeBE, CommonFluidTank>(
     VABlockEntities.FLUID_PIPE.get(), pos, state,
     FluidPipeFluidTankHandler,
-    {PlatformUtils.getFluidTank()})
+    {PlatformUtils.getFluidTank()}) {
+    //for forge mixin
+    override fun onIdUpdate() { super.onIdUpdate() }
+    private fun _getContainer(): CommonFluidTank = container
+}

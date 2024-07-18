@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.world.item.CreativeModeTab
 import net.minecraft.world.item.Item
 import net.minecraft.world.item.ItemStack
-import net.spaceeye.vmod.VM
 import net.spaceeye.vmod_additions.items.Linker
 
 object VAItems {
@@ -16,7 +15,7 @@ object VAItems {
 
     val TAB: CreativeModeTab = CreativeTabRegistry.create(
         ResourceLocation(
-            VM.MOD_ID,
+            VA.MOD_ID,
             "vmod_additions_tab"
         )
     ) { ItemStack(LOGO.get()) }

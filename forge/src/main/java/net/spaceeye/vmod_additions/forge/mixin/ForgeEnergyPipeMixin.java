@@ -27,7 +27,7 @@ abstract class ForgeEnergyPipeMixin extends BlockEntity {
     }
 
     @Shadow
-    abstract public CommonEnergyTank getTank();
+    abstract public CommonEnergyTank _getContainer();
 
     @Unique
     public LazyOptional<IEnergyStorage> lazyEnergyHandler = LazyOptional.empty();
@@ -53,13 +53,13 @@ abstract class ForgeEnergyPipeMixin extends BlockEntity {
     @Override
     public void onLoad() {
         super.onLoad();
-        lazyEnergyHandler = LazyOptional.of(() -> (ForgeEnergyTank)getTank());
+        lazyEnergyHandler = LazyOptional.of(() -> (ForgeEnergyTank)_getContainer());
     }
 
     @Override
     public void invalidateCaps() {
         super.invalidateCaps();
         lazyEnergyHandler.invalidate();
-        lazyEnergyHandler = LazyOptional.of(() -> (ForgeEnergyTank)getTank());
+        lazyEnergyHandler = LazyOptional.of(() -> (ForgeEnergyTank)_getContainer());
     }
 }
