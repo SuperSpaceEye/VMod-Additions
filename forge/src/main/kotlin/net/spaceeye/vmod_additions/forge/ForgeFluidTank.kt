@@ -8,7 +8,7 @@ import net.spaceeye.vmod_additions.sharedContainers.CommonFluidTank
 class ForgeFluidTank(capacity: Int): CommonFluidTank, FluidTank(capacity) {
     constructor(): this(1)
 
-    var onChange: (() -> Unit)? = null
+    var callbacks = mutableListOf<(() -> Unit)>()
 
     override fun withCapacity(capacity: Long): CommonFluidTank {
         return ForgeFluidTank(capacity.toInt() * 1000)
@@ -26,11 +26,11 @@ class ForgeFluidTank(capacity: Int): CommonFluidTank, FluidTank(capacity) {
     }
 
     override fun registerOnChange(callback: () -> Unit) {
-        onChange = callback
+        callbacks.add(callback)
     }
 
     override fun onContentsChanged() {
         super.onContentsChanged()
-        onChange?.invoke()
+        callbacks.forEach { it.invoke() }
     }
 }

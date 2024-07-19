@@ -32,6 +32,7 @@ class RotationPipeBE(pos: BlockPos, state: BlockState): KineticBlockEntity(VABlo
         if (!isConnected) {return}
         otherPos = BlockPos.of(tag.getLong("otherPos"))
 
+        //for some reason blockentity doesn't have a server level when read is called, so i need to do this shit
         RandomEvents.serverOnTick.on { (it), unregister ->
             val level = level
             if (level !is ServerLevel) {return@on}

@@ -7,7 +7,7 @@ import net.spaceeye.vmod_additions.sharedContainers.CommonEnergyTank
 class ForgeEnergyTank(capacity: Int): CommonEnergyTank, EnergyStorage(capacity, capacity, capacity) {
     constructor(): this(100000000)
 
-    var onChange: (() -> Unit)? = null
+    var callbacks = mutableListOf<(() -> Unit)>()
 
     override fun withCapacity(capacity: Long): CommonEnergyTank {
         return ForgeEnergyTank(capacity.toInt())
@@ -22,17 +22,17 @@ class ForgeEnergyTank(capacity: Int): CommonEnergyTank, EnergyStorage(capacity, 
     }
 
     override fun registerOnChange(callback: () -> Unit) {
-        onChange = callback
+        callbacks.add(callback)
     }
 
 
     override fun receiveEnergy(maxReceive: Int, simulate: Boolean): Int {
-        if (!simulate) onChange?.invoke()
+        if (!simulate) callbacks.forEach { it.invoke() }
         return super.receiveEnergy(maxReceive, simulate)
     }
 
     override fun extractEnergy(maxExtract: Int, simulate: Boolean): Int {
-        if (!simulate) onChange?.invoke()
+        if (!simulate) callbacks.forEach { it.invoke() }
         return super.extractEnergy(maxExtract, simulate)
     }
 }

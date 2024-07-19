@@ -1,14 +1,18 @@
 package net.spaceeye.vmod_additions.blocks
 
 import net.minecraft.core.BlockPos
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.block.BaseEntityBlock
 import net.minecraft.world.level.block.RenderShape
+import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.state.BlockState
+import net.spaceeye.vmod.constraintsManaging.getCenterPos
 import net.spaceeye.vmod.constraintsManaging.makeManagedConstraint
 import net.spaceeye.vmod.constraintsManaging.removeManagedConstraint
 import net.spaceeye.vmod.constraintsManaging.types.RopeMConstraint
+import net.spaceeye.vmod.schematic.icontainers.ICopyableBlock
 import net.spaceeye.vmod.utils.Vector3d
 import net.spaceeye.vmod.utils.vs.posShipToWorld
 import net.spaceeye.vmod_additions.Linkable
@@ -16,13 +20,78 @@ import net.spaceeye.vmod_additions.blockentities.CommonPipeBE
 import net.spaceeye.vmod_additions.renderers.TubeRenderer
 import net.spaceeye.vmod_additions.sharedContainers.CommonContainer
 import net.spaceeye.vmod_additions.sharedContainers.CommonSharedContainerHandler
+import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.dimensionId
 import org.valkyrienskies.mod.common.getShipManagingPos
 import org.valkyrienskies.mod.common.shipObjectWorld
 
-abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntityBlock(properties), Linkable {
+abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntityBlock(properties), Linkable, ICopyableBlock {
     abstract val handler: CommonSharedContainerHandler<T>
     abstract val maxConnectionDist: Double
+
+    override fun onCopy(
+        level: ServerLevel,
+        pos: BlockPos,
+        state: BlockState,
+        be: BlockEntity?,
+        shipsBeingCopied: List<ServerShip>
+    ): CompoundTag? {
+        be as CommonPipeBE<*, *>
+
+        val ship = level.getShipManagingPos(be.otherPos) ?: return be.saveWithFullMetadata()
+
+        val tag = be.saveWithFullMetadata()
+        tag.putLong("otherPos", getCenterPos(be.otherPos.x, be.otherPos.z).sadd(0, be.otherPos.y, 0).toBlockPos().asLong())
+        tag.putLong("otherShipId", ship.id)
+
+        return tag
+    }
+
+    override fun onPaste(
+        level: ServerLevel,
+        pos: BlockPos,
+        state: BlockState,
+        oldToNewId: Map<Long, Long>,
+        tag: CompoundTag?,
+        delayLoading: () -> Unit
+    ): ((BlockEntity?) -> Unit)? {
+        tag ?: return null
+        val otherId = oldToNewId[tag.getLong("otherShipId")] ?: return null
+        val otherShip = level.shipObjectWorld.allShips.getById(otherId) ?: return null
+        val otherCenteredPos = Vector3d(BlockPos.of(tag.getLong("otherPos")))
+
+        val otherPos = getCenterPos(
+            otherShip.transform.positionInShip.x().toInt(),
+            otherShip.transform.positionInShip.z().toInt()) + otherCenteredPos
+
+        tag.putLong("otherPos", otherPos.toBlockPos().asLong())
+        tag.putInt("mID", -1)
+        tag.putInt("id", -1)
+
+        val otherBPos = otherPos.toBlockPos()
+
+        delayLoading()
+        return {be: BlockEntity? ->
+            be as CommonPipeBE<*, *>
+            val otherBe = level.getBlockEntity(otherBPos)
+            if (otherBe is CommonPipeBE<*, *> && otherBe.id == -1) {
+                val pos1 = be.blockPos
+                val pos2 = otherBe.blockPos
+
+                val tankId = be.containerHandler.createContainer {
+                    val be1 = level.getBlockEntity(pos1)
+                    if (be1 is CommonPipeBE<*, *>) { be1.setChanged() }
+
+                    val be2 = level.getBlockEntity(pos2)
+                    if (be2 is CommonPipeBE<*, *>) { be2.setChanged() }
+
+                    (be1 is CommonPipeBE<*, *>) && (be2 is CommonPipeBE<*, *>)
+                }
+                be.id = tankId
+                otherBe.id = tankId
+            }
+        }
+    }
 
     override fun unlink(level: ServerLevel, pos: BlockPos): Boolean {
         val be = level.getBlockEntity(pos) ?: return false

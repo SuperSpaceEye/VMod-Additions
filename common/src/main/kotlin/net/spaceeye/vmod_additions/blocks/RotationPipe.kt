@@ -7,29 +7,86 @@ import com.simibubi.create.foundation.block.IBE
 import net.minecraft.core.BlockPos
 import net.minecraft.core.Direction
 import net.minecraft.core.Direction.Axis
+import net.minecraft.nbt.CompoundTag
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.LevelReader
+import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.state.properties.BlockStateProperties
+import net.spaceeye.vmod.constraintsManaging.getCenterPos
 import net.spaceeye.vmod.constraintsManaging.makeManagedConstraint
 import net.spaceeye.vmod.constraintsManaging.removeManagedConstraint
 import net.spaceeye.vmod.constraintsManaging.types.RopeMConstraint
+import net.spaceeye.vmod.schematic.icontainers.ICopyableBlock
 import net.spaceeye.vmod.utils.Vector3d
 import net.spaceeye.vmod.utils.vs.posShipToWorld
 import net.spaceeye.vmod_additions.Linkable
 import net.spaceeye.vmod_additions.VABlockEntities
 import net.spaceeye.vmod_additions.blockentities.RotationPipeBE
 import net.spaceeye.vmod_additions.renderers.TubeRenderer
+import org.valkyrienskies.core.api.ships.ServerShip
 import org.valkyrienskies.mod.common.dimensionId
 import org.valkyrienskies.mod.common.getShipManagingPos
 import org.valkyrienskies.mod.common.shipObjectWorld
 
-class RotationPipe(properties: Properties): RotatedPillarKineticBlock(properties), IBE<RotationPipeBE>, IRotate, Linkable {
+class RotationPipe(properties: Properties): RotatedPillarKineticBlock(properties), IBE<RotationPipeBE>, IRotate, Linkable, ICopyableBlock {
     init {
         registerDefaultState(defaultBlockState().setValue(BlockStateProperties.AXIS, Axis.Y))
+    }
+
+    override fun onCopy(
+        level: ServerLevel,
+        pos: BlockPos,
+        state: BlockState,
+        be: BlockEntity?,
+        shipsBeingCopied: List<ServerShip>
+    ): CompoundTag? {
+        be as RotationPipeBE
+
+        if (be.otherPos == null) return be.saveWithFullMetadata()
+        val ship = level.getShipManagingPos(be.otherPos!!) ?: return be.saveWithFullMetadata()
+
+        val tag = be.saveWithFullMetadata()
+        tag.putLong("otherPos", getCenterPos(be.otherPos!!.x, be.otherPos!!.z).sadd(0, be.otherPos!!.y, 0).toBlockPos().asLong())
+        tag.putLong("otherShipId", ship.id)
+
+        return tag
+    }
+
+    override fun onPaste(
+        level: ServerLevel,
+        pos: BlockPos,
+        state: BlockState,
+        oldToNewId: Map<Long, Long>,
+        tag: CompoundTag?,
+        delayLoading: () -> Unit
+    ): ((BlockEntity?) -> Unit)? {
+        tag ?: return null
+        val otherId = oldToNewId[tag.getLong("otherShipId")] ?: return null
+        val otherShip = level.shipObjectWorld.allShips.getById(otherId) ?: return null
+        val otherCenteredPos = Vector3d(BlockPos.of(tag.getLong("otherPos")))
+
+        val otherPos = getCenterPos(
+            otherShip.transform.positionInShip.x().toInt(),
+            otherShip.transform.positionInShip.z().toInt()) + otherCenteredPos
+
+        tag.putLong("otherPos", otherPos.toBlockPos().asLong())
+        tag.putInt("mID", -1)
+
+        val otherBPos = otherPos.toBlockPos()
+
+        delayLoading()
+        return {be: BlockEntity? ->
+            be as RotationPipeBE
+            val otherBe = level.getBlockEntity(otherBPos)
+            if (otherBe is RotationPipeBE && otherBe.otherPos != null) {
+                RotationPropagator.handleAdded(level, pos, be)
+                RotationPropagator.handleAdded(level, otherBPos, otherBe)
+            }
+        }
     }
 
     override fun unlink(level: ServerLevel, pos: BlockPos): Boolean {

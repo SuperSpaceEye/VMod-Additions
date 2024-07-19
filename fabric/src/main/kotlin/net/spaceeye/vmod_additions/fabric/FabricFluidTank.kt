@@ -8,7 +8,7 @@ import net.spaceeye.vmod_additions.sharedContainers.CommonFluidTank
 
 class FabricFluidTank: CommonFluidTank, SingleVariantStorage<FluidVariant>() {
     private var _capacity = FluidConstants.BUCKET
-    var onChange: (() -> Unit)? = null
+    var callbacks = mutableListOf<(() -> Unit)>()
     override fun writeNBT(name: String, tag: CompoundTag) {
         tag.put("${name}fluidVariant", variant.toNbt())
         tag.putLong("${name}amount", amount)
@@ -27,7 +27,7 @@ class FabricFluidTank: CommonFluidTank, SingleVariantStorage<FluidVariant>() {
     }
 
     override fun registerOnChange(callback: () -> Unit) {
-        onChange = callback
+        callbacks.add(callback)
     }
 
     override fun getCapacity(variant: FluidVariant?): Long {
@@ -40,6 +40,6 @@ class FabricFluidTank: CommonFluidTank, SingleVariantStorage<FluidVariant>() {
 
     override fun onFinalCommit() {
         super.onFinalCommit()
-        onChange?.invoke()
+        callbacks.forEach { it.invoke() }
     }
 }

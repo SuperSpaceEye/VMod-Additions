@@ -5,7 +5,7 @@ import net.spaceeye.vmod_additions.sharedContainers.CommonEnergyTank
 import team.reborn.energy.api.base.SimpleEnergyStorage
 
 class FabricEnergyTank(capacity: Long): CommonEnergyTank, SimpleEnergyStorage(capacity, capacity, capacity) {
-    var onChange: (() -> Unit)? = null
+    var callbacks = mutableListOf<(() -> Unit)>()
 
     constructor(): this(100000000L) {}
 
@@ -22,13 +22,13 @@ class FabricEnergyTank(capacity: Long): CommonEnergyTank, SimpleEnergyStorage(ca
     }
 
     override fun registerOnChange(callback: () -> Unit) {
-        onChange = callback
+        callbacks.add(callback)
     }
 
 
 
     override fun onFinalCommit() {
         super.onFinalCommit()
-        onChange?.invoke()
+        callbacks.forEach { it.invoke() }
     }
 }

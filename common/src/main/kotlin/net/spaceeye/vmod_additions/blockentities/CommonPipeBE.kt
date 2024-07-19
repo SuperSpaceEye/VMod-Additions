@@ -2,9 +2,11 @@ package net.spaceeye.vmod_additions.blockentities
 
 import net.minecraft.core.BlockPos
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockState
+import net.spaceeye.vmod.events.RandomEvents
 import net.spaceeye.vmod_additions.sharedContainers.CommonContainer
 import net.spaceeye.vmod_additions.sharedContainers.CommonSharedContainerHandler
 
@@ -41,6 +43,22 @@ abstract class CommonPipeBE<T: BlockEntity, TT: CommonContainer>(
         otherPos = BlockPos.of(tag.getLong("otherPos"))
         val tempTank = containerConstructor()
         tempTank.readNBT("container", tag)
-        containerHandler.loadContainer(id, tempTank)
+
+        RandomEvents.serverOnTick.on { (it), unregister ->
+            val level = level
+            if (level !is ServerLevel) {return@on}
+            val blockPos = blockPos
+
+            unregister.unregister()
+
+            containerHandler.loadContainer(id, tempTank) {
+                val be = level.getBlockEntity(blockPos)
+
+                if (be is CommonPipeBE<*, *>) {
+                    be.setChanged()
+                    true
+                } else false
+            }
+        }
     }
 }

@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture
 import net.minecraft.network.FriendlyByteBuf
 import net.minecraft.world.level.LightLayer
 import net.minecraft.world.level.block.Blocks
+import net.spaceeye.vmod.rendering.types.BaseRenderer
 import net.spaceeye.vmod.rendering.types.BlockRenderer
 import net.spaceeye.vmod.utils.Vector3d
 import net.spaceeye.vmod.utils.getQuatFromDir
@@ -20,6 +21,7 @@ import net.spaceeye.vmod.utils.writeVector3d
 import org.joml.Quaterniond
 import org.lwjgl.opengl.GL11
 import org.valkyrienskies.core.api.ships.ClientShip
+import org.valkyrienskies.core.api.ships.Ship
 import org.valkyrienskies.mod.common.getShipManagingPos
 import org.valkyrienskies.mod.common.util.toMinecraft
 
@@ -47,6 +49,9 @@ class TubeRenderer(): BlockRenderer {
     }
 
     override val typeName = "VMATubeRenderer"
+    override fun copy(nShip1: Ship?, nShip2: Ship?, spoint1: Vector3d, spoint2: Vector3d): BaseRenderer {
+        return TubeRenderer(spoint1, spoint2, scale, ship1isShip, ship2isShip)
+    }
 
     override fun renderBlockData(poseStack: PoseStack, camera: Camera, buffer: MultiBufferSource) {
         val level = Minecraft.getInstance().level!!
