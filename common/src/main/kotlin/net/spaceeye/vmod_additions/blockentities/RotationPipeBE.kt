@@ -12,8 +12,8 @@ import net.spaceeye.vmod.events.AVSEvents
 import net.spaceeye.vmod.events.RandomEvents
 import net.spaceeye.vmod_additions.VABlockEntities
 
-class RotationPipeBE(pos: BlockPos, state: BlockState): KineticBlockEntity(VABlockEntities.ROTATION_PIPE!!.get(), pos, state) {
-    var mID = -1
+class RotationPipeBE(pos: BlockPos, state: BlockState): KineticBlockEntity(VABlockEntities.ROTATION_PIPE!!.get(), pos, state), MIDContainer {
+    override var mID = -1
     var otherPos: BlockPos? = null
 
     override fun write(tag: CompoundTag?, clientPacket: Boolean) {

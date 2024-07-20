@@ -25,6 +25,7 @@ import net.spaceeye.vmod.utils.Vector3d
 import net.spaceeye.vmod.utils.vs.posShipToWorld
 import net.spaceeye.vmod_additions.Linkable
 import net.spaceeye.vmod_additions.VABlockEntities
+import net.spaceeye.vmod_additions.VASchemMIDFixer
 import net.spaceeye.vmod_additions.blockentities.RotationPipeBE
 import net.spaceeye.vmod_additions.renderers.TubeRenderer
 import org.valkyrienskies.core.api.ships.ServerShip
@@ -74,7 +75,9 @@ class RotationPipe(properties: Properties): RotatedPillarKineticBlock(properties
             otherShip.transform.positionInShip.z().toInt()) + otherCenteredPos
 
         tag.putLong("otherPos", otherPos.toBlockPos().asLong())
-        tag.putInt("mID", -1)
+        val oldMID = tag.getInt("mID")
+
+        VASchemMIDFixer.addRequest(oldMID, level, pos)
 
         val otherBPos = otherPos.toBlockPos()
 

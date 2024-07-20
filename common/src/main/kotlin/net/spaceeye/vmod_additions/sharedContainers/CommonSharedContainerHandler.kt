@@ -19,6 +19,7 @@ abstract class CommonSharedContainerHandler<T: CommonContainer>(val containerCon
     }
 
     fun loadContainer(id: Int, container: T, update: () -> Boolean) {
+        if (id == -1) {return}
         val container = data.getOrPut(id) {container}
         counter = max(counter, id)
 

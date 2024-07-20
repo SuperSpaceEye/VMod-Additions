@@ -27,5 +27,7 @@ object VAItems {
     fun register() {
         VABlocks.registerItems(ITEMS)
         ITEMS.register()
+
+        VASchemMIDFixer
     }
 }

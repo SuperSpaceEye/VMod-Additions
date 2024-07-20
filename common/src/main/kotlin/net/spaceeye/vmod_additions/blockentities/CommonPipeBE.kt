@@ -7,8 +7,13 @@ import net.minecraft.world.level.block.entity.BlockEntity
 import net.minecraft.world.level.block.entity.BlockEntityType
 import net.minecraft.world.level.block.state.BlockState
 import net.spaceeye.vmod.events.RandomEvents
+import net.spaceeye.vmod_additions.VASchemMIDFixer
 import net.spaceeye.vmod_additions.sharedContainers.CommonContainer
 import net.spaceeye.vmod_additions.sharedContainers.CommonSharedContainerHandler
+
+interface MIDContainer {
+    var mID: Int
+}
 
 //TODO add logic for toolgun schem
 abstract class CommonPipeBE<T: BlockEntity, TT: CommonContainer>(
@@ -16,13 +21,13 @@ abstract class CommonPipeBE<T: BlockEntity, TT: CommonContainer>(
     pos: BlockPos,
     state: BlockState,
     val containerHandler: CommonSharedContainerHandler<TT>,
-    val containerConstructor: () -> TT): BlockEntity(type, pos, state) {
+    val containerConstructor: () -> TT): BlockEntity(type, pos, state), MIDContainer {
     var _id = -1
     var id:Int
         get() = _id
         set(value) {onIdUpdate(); _id = value}
 
-    var mID = -1
+    override var mID = -1
     var otherPos = BlockPos(0, 0, 0)
     open val container: TT
         get() = containerHandler.getContainer(id)

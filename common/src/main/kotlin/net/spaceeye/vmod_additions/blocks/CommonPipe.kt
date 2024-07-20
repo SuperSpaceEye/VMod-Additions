@@ -16,6 +16,8 @@ import net.spaceeye.vmod.schematic.icontainers.ICopyableBlock
 import net.spaceeye.vmod.utils.Vector3d
 import net.spaceeye.vmod.utils.vs.posShipToWorld
 import net.spaceeye.vmod_additions.Linkable
+import net.spaceeye.vmod_additions.VASchemMIDFixer
+import net.spaceeye.vmod_additions.WLOG
 import net.spaceeye.vmod_additions.blockentities.CommonPipeBE
 import net.spaceeye.vmod_additions.renderers.TubeRenderer
 import net.spaceeye.vmod_additions.sharedContainers.CommonContainer
@@ -41,7 +43,9 @@ abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntit
         val ship = level.getShipManagingPos(be.otherPos) ?: return be.saveWithFullMetadata()
 
         val tag = be.saveWithFullMetadata()
-        tag.putLong("otherPos", getCenterPos(be.otherPos.x, be.otherPos.z).sadd(0, be.otherPos.y, 0).toBlockPos().asLong())
+
+        val otherCenteredPos = Vector3d(be.otherPos) - getCenterPos(ship.transform.positionInShip.x().toInt(), ship.transform.positionInShip.z().toInt()) + 0.5
+        tag.putLong("otherPos", otherCenteredPos.toBlockPos().asLong())
         tag.putLong("otherShipId", ship.id)
 
         return tag
@@ -65,8 +69,10 @@ abstract class CommonPipe<T: CommonContainer>(properties: Properties): BaseEntit
             otherShip.transform.positionInShip.z().toInt()) + otherCenteredPos
 
         tag.putLong("otherPos", otherPos.toBlockPos().asLong())
-        tag.putInt("mID", -1)
         tag.putInt("id", -1)
+        val oldMID = tag.getInt("mID")
+
+        VASchemMIDFixer.addRequest(oldMID, level, pos)
 
         val otherBPos = otherPos.toBlockPos()
 
